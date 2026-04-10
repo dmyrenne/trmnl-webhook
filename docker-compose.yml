@@ -1,7 +1,6 @@
 services:
   trmnl-dashboard:
-    build: .
-    #image: ghcr.io/dmyrenne/trmnl-webhook:latest
+    image: ghcr.io/dmyrenne/trmnl-webhook:latest
     container_name: trmnl-dashboard
     restart: unless-stopped
     env_file:
