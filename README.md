@@ -50,6 +50,9 @@ Edit `.env` and fill in your values:
 | `CUSTOM_FONT_FAMILY` | CSS font-family name for your custom font (optional, see below) |
 | `UPDATE_SCHEDULE` | Update schedule — `15M` (every 15 min), `2H` (every 2 h), `15:00` (daily at 15:00). Default: `15M` |
 | `TIMEZONE` | [TZ database name](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones), e.g. `Europe/Berlin` |
+| `LOCALE` | Country code (`DE`, `US`, `FR`, `ES`, `IT`, `NL`, `PT`, `BR`, `GB`, …) or full BCP-47 locale (`de-DE`, `en-US`). Controls date/time format, calendar labels and weather language. Default: `US` |
+| `TIME_FORMAT` | `12h` or `24h`. Default: `12h` for `US`, `24h` for all others |
+| `UNIT_TEMP` | `C` or `F`. Default: `F` for `US`, `C` for all others |
 | `PORT` | Internal server port (default: `3000`, do not change when using Docker) |
 
 ### 3. Add a custom font (optional)

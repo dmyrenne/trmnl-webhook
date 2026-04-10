@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="<%= locale %>">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=800, initial-scale=1.0">
@@ -30,15 +30,15 @@
       <% } else { %>
         <div class="weather-current">
           <span class="material-symbols-outlined icon-large"><%= weather.icon %></span>
-          <span class="temp-current"><%= weather.tempCurrent %>°C</span>
+          <span class="temp-current"><%= weather.tempCurrent %><%= tempUnit %></span>
         </div>
         <div class="weather-forecast">
           <% weather.forecast.forEach(function(day) { %>
           <div class="forecast-day">
             <span class="material-symbols-outlined icon-small"><%= day.icon %></span>
             <div class="forecast-temps">
-              <span><%= day.tempMax %>°C</span>
-              <span><%= day.tempMin %>°C</span>
+              <span><%= day.tempMax %><%= tempUnit %></span>
+              <span><%= day.tempMin %><%= tempUnit %></span>
               <span><%= day.precipProb %>%</span>
             </div>
           </div>
@@ -60,7 +60,7 @@
     <section class="calendar">
 
       <div class="day-section">
-        <span class="day-label">Heute</span>
+        <span class="day-label"><%= t.today %></span>
         <% calLayout.today.forEach(function(ev) { %>
           <% if (ev.type === 'task') { %>
           <div class="task">
@@ -69,7 +69,7 @@
           </div>
           <% } else { %>
           <div class="event">
-            <span class="event-time"><% if (ev.allDay) { %>ganzt.<% } else { %><%= ev.start.toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'}) %><% } %></span>
+            <span class="event-time"><% if (ev.allDay) { %><%= t.allDay %><% } else { %><%= ev.start.toLocaleTimeString(locale, timeOpts) %><% } %></span>
             <span class="event-title"><%= ev.summary %></span>
           </div>
           <% } %>
@@ -77,7 +77,7 @@
       </div>
 
       <div class="day-section">
-        <span class="day-label">Morgen, <%= tomorrowStr %></span>
+        <span class="day-label"><%= t.tomorrow %>, <%= tomorrowStr %></span>
         <% calLayout.tomorrow.forEach(function(ev) { %>
           <% if (ev.type === 'task') { %>
           <div class="task">
@@ -86,7 +86,7 @@
           </div>
           <% } else { %>
           <div class="event">
-            <span class="event-time"><% if (ev.allDay) { %>ganzt.<% } else { %><%= ev.start.toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'}) %><% } %></span>
+            <span class="event-time"><% if (ev.allDay) { %><%= t.allDay %><% } else { %><%= ev.start.toLocaleTimeString(locale, timeOpts) %><% } %></span>
             <span class="event-title"><%= ev.summary %></span>
           </div>
           <% } %>
@@ -95,7 +95,7 @@
 
       <% if (calLayout.showDayAfter) { %>
       <div class="day-section">
-        <span class="day-label">Übermorgen, <%= dayAfterStr %></span>
+        <span class="day-label"><%= dayAfterLabel %>, <%= dayAfterStr %></span>
         <% calLayout.dayAfter.forEach(function(ev) { %>
           <% if (ev.type === 'task') { %>
           <div class="task">
@@ -104,7 +104,7 @@
           </div>
           <% } else { %>
           <div class="event">
-            <span class="event-time"><% if (ev.allDay) { %>ganzt.<% } else { %><%= ev.start.toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'}) %><% } %></span>
+            <span class="event-time"><% if (ev.allDay) { %><%= t.allDay %><% } else { %><%= ev.start.toLocaleTimeString(locale, timeOpts) %><% } %></span>
             <span class="event-title"><%= ev.summary %></span>
           </div>
           <% } %>

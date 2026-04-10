@@ -42,8 +42,15 @@ async function fetchWeather() {
   const location = encodeURIComponent(process.env.VISUAL_CROSSING_LOCATION || 'Berlin,DE');
   const key = process.env.VISUAL_CROSSING_KEY;
 
+  const rawLocale = (process.env.LOCALE || 'US').toUpperCase();
+  const lang = rawLocale.length === 2 ? rawLocale.toLowerCase() : rawLocale.split('-')[0].toLowerCase();
+  const IMPERIAL_LOCALES = ['US', 'BS', 'BZ', 'KY', 'PW'];
+  const rawUnitTemp = (process.env.UNIT_TEMP || '').toUpperCase();
+  const useFahrenheit = rawUnitTemp === 'F' || (!rawUnitTemp && IMPERIAL_LOCALES.includes(rawLocale));
+  const unitGroup = useFahrenheit ? 'us' : 'metric';
+
   const url = `https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/${location}/next3days` +
-    `?unitGroup=metric&lang=de&include=current,days,alerts&key=${key}&contentType=json`;
+    `?unitGroup=${unitGroup}&lang=${lang}&include=current,days,alerts&key=${key}&contentType=json`;
 
   const { data } = await axios.get(url, { timeout: 10000 });
 

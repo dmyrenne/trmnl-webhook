@@ -24,8 +24,8 @@ async function runUpdate(dashboardUrl) {
  * Parst UPDATE_SCHEDULE in einen Cron-Ausdruck.
  *
  * Unterstützte Formate:
- *   15M   → alle 15 Minuten       → "*/15 * * * *"
- *   2H    → alle 2 Stunden        → "0 */2 * * *"
+ *   15M   → alle 15 Minuten       → "*\/15 * * * *"
+ *   2H    → alle 2 Stunden        → "0 *\/2 * * *"
  *   15:00 → täglich um 15:00 Uhr  → "0 15 * * *"
  *
  * @param {string} schedule

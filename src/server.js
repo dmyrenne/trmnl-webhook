@@ -104,6 +104,46 @@ function buildFontConfig() {
 
 const { fontFaceCSS, headingFont } = buildFontConfig();
 
+// ─── i18n ─────────────────────────────────────────────────────────────────────
+
+const TRANSLATIONS = {
+  de: { today: 'Heute',     tomorrow: 'Morgen',   allDay: 'ganzt.',        weatherError: 'Wetter nicht verfügbar' },
+  en: { today: 'Today',     tomorrow: 'Tomorrow', allDay: 'all-day',       weatherError: 'Weather unavailable' },
+  fr: { today: "Auj.",      tomorrow: 'Demain',   allDay: 'journée',       weatherError: 'Météo indisponible' },
+  es: { today: 'Hoy',       tomorrow: 'Mañana',   allDay: 'todo el día',   weatherError: 'Clima no disponible' },
+  it: { today: 'Oggi',      tomorrow: 'Domani',   allDay: 'giornata',      weatherError: 'Meteo non disponibile' },
+  nl: { today: 'Vandaag',   tomorrow: 'Morgen',   allDay: 'hele dag',      weatherError: 'Weer niet beschikbaar' },
+  pt: { today: 'Hoje',      tomorrow: 'Amanhã',   allDay: 'dia inteiro',   weatherError: 'Tempo indisponível' },
+};
+
+// Mappt kurze Ländercodes (z.B. "DE") auf BCP-47-Locales (z.B. "de-DE")
+const LOCALE_MAP = {
+  AT: 'de-AT', BR: 'pt-BR', CH: 'de-CH', CN: 'zh-CN', CZ: 'cs-CZ',
+  DE: 'de-DE', DK: 'da-DK', ES: 'es-ES', FI: 'fi-FI', FR: 'fr-FR',
+  GB: 'en-GB', GR: 'el-GR', HR: 'hr-HR', HU: 'hu-HU', IT: 'it-IT',
+  JP: 'ja-JP', KR: 'ko-KR', NL: 'nl-NL', NO: 'nb-NO', PL: 'pl-PL',
+  PT: 'pt-PT', RO: 'ro-RO', RU: 'ru-RU', SE: 'sv-SE', SK: 'sk-SK',
+  TR: 'tr-TR', UA: 'uk-UA', US: 'en-US',
+};
+
+const rawLocale = (process.env.LOCALE || 'US').toUpperCase();
+const locale = LOCALE_MAP[rawLocale] || rawLocale;
+const langCode = locale.split('-')[0].toLowerCase();
+const t = TRANSLATIONS[langCode] || TRANSLATIONS.en;
+
+// Locales die standardmäßig 12h-Format und Fahrenheit nutzen
+const IMPERIAL_LOCALES = ['US', 'BS', 'BZ', 'KY', 'PW'];
+const isImperial = IMPERIAL_LOCALES.includes(rawLocale);
+
+// Zeitformat: TIME_FORMAT=12h / 24h, sonst Locale-Default
+const rawTimeFormat = (process.env.TIME_FORMAT || '').toLowerCase();
+const hour12 = rawTimeFormat === '12h' ? true : rawTimeFormat === '24h' ? false : (isImperial ? true : undefined);
+const timeOpts = { hour: '2-digit', minute: '2-digit', ...(hour12 !== undefined && { hour12 }) };
+
+// Temperatureinheit: UNIT_TEMP=C / F, sonst Locale-Default
+const rawUnitTemp = (process.env.UNIT_TEMP || '').toUpperCase();
+const tempUnit = rawUnitTemp === 'F' || (!rawUnitTemp && isImperial) ? '°F' : '°C';
+
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use('/static', express.static(path.join(__dirname, 'views')));
@@ -140,20 +180,22 @@ async function getData() {
 
   const now2 = new Date();
   const calLayout = layoutCalendar(grouped, now2);
-  const dateStr = now2.toLocaleDateString('de-DE', {
+  const dateStr = now2.toLocaleDateString(locale, {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
   });
-  const timeStr = now2.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+  const timeStr = now2.toLocaleTimeString(locale, timeOpts);
 
   const tomorrow = new Date(now2);
   tomorrow.setDate(tomorrow.getDate() + 1);
-  const tomorrowStr = `${String(tomorrow.getDate()).padStart(2, '0')}.${String(tomorrow.getMonth() + 1).padStart(2, '0')}.`;
+  const tomorrowStr = tomorrow.toLocaleDateString(locale, { day: '2-digit', month: '2-digit' });
 
   const dayAfter = new Date(now2);
   dayAfter.setDate(dayAfter.getDate() + 2);
-  const dayAfterStr = `${String(dayAfter.getDate()).padStart(2, '0')}.${String(dayAfter.getMonth() + 1).padStart(2, '0')}.`;
+  // Wochentag via Intl — funktioniert automatisch in jeder Sprache
+  const dayAfterLabel = dayAfter.toLocaleDateString(locale, { weekday: 'long' });
+  const dayAfterStr = dayAfter.toLocaleDateString(locale, { day: '2-digit', month: '2-digit' });
 
-  cachedData = { weather: weatherData, calLayout, dateStr, timeStr, tomorrowStr, dayAfterStr, fontFaceCSS, headingFont };
+  cachedData = { weather: weatherData, calLayout, dateStr, timeStr, tomorrowStr, dayAfterLabel, dayAfterStr, fontFaceCSS, headingFont, locale, timeOpts, tempUnit, t };
   cacheTime = Date.now();
   return cachedData;
 }

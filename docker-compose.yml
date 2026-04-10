@@ -1,6 +1,7 @@
 services:
   trmnl-dashboard:
-    image: ghcr.io/dmyrenne/trmnl-webhook:latest
+    build: .
+    #image: ghcr.io/dmyrenne/trmnl-webhook:latest
     container_name: trmnl-dashboard
     restart: unless-stopped
     env_file:
@@ -10,7 +11,7 @@ services:
       - "3210:3000"
     volumes:
       # Gekaufte Fonts hier ablegen (siehe README)
-      - ./fonts:/app/src/views/fonts:ro
+      - ./src/views/fonts:/app/src/views/fonts:ro
     # Erforderlich für Chromium inside Docker
     shm_size: '256mb'
     cap_add:
