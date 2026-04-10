@@ -1,0 +1,9 @@
+node_modules/
+.env
+.claude/
+
+# Gekaufte Fonts — nicht committen
+src/views/fonts/*.otf
+src/views/fonts/*.ttf
+src/views/fonts/*.woff
+src/views/fonts/*.woff2

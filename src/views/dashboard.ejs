@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=800, initial-scale=1.0">
+  <title>TRMNL Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat&family=Lato:wght@400&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@40,300,0,0&display=block" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css">
+  <style>
+    <%- fontFaceCSS %>
+    :root { --heading-font: '<%= headingFont %>'; }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+
+  <header class="header">
+    <span class="date"><%= dateStr %></span>
+    <span class="time"><%= timeStr %></span>
+  </header>
+
+  <div class="content">
+
+    <!-- Weather Panel -->
+    <section class="weather">
+      <% if (weather.error) { %>
+        <div class="no-data"><%= weather.error %></div>
+      <% } else { %>
+        <div class="weather-current">
+          <span class="material-symbols-outlined icon-large"><%= weather.icon %></span>
+          <span class="temp-current"><%= weather.tempCurrent %>°C</span>
+        </div>
+        <div class="weather-forecast">
+          <% weather.forecast.forEach(function(day) { %>
+          <div class="forecast-day">
+            <span class="material-symbols-outlined icon-small"><%= day.icon %></span>
+            <div class="forecast-temps">
+              <span><%= day.tempMax %>°C</span>
+              <span><%= day.tempMin %>°C</span>
+              <span><%= day.precipProb %>%</span>
+            </div>
+          </div>
+          <% }); %>
+        </div>
+        <% if (weather.alert) { %>
+        <div class="weather-alert">
+          <span class="material-symbols-outlined icon-alert">report</span>
+          <div class="alert-text">
+            <span><%= weather.alert.event %></span>
+            <span><%= weather.alert.headline %></span>
+          </div>
+        </div>
+        <% } %>
+      <% } %>
+    </section>
+
+    <!-- Calendar Panel -->
+    <section class="calendar">
+
+      <div class="day-section">
+        <span class="day-label">Heute</span>
+        <% calLayout.today.forEach(function(ev) { %>
+          <% if (ev.type === 'task') { %>
+          <div class="task">
+            <span class="material-symbols-outlined task-icon"><%= ev.completed ? 'check_circle' : 'radio_button_unchecked' %></span>
+            <span class="task-title<%= ev.completed ? ' task-done' : '' %>"><%= ev.summary %></span>
+          </div>
+          <% } else { %>
+          <div class="event">
+            <span class="event-time"><% if (ev.allDay) { %>ganzt.<% } else { %><%= ev.start.toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'}) %><% } %></span>
+            <span class="event-title"><%= ev.summary %></span>
+          </div>
+          <% } %>
+        <% }); %>
+      </div>
+
+      <div class="day-section">
+        <span class="day-label">Morgen, <%= tomorrowStr %></span>
+        <% calLayout.tomorrow.forEach(function(ev) { %>
+          <% if (ev.type === 'task') { %>
+          <div class="task">
+            <span class="material-symbols-outlined task-icon"><%= ev.completed ? 'check_circle' : 'radio_button_unchecked' %></span>
+            <span class="task-title<%= ev.completed ? ' task-done' : '' %>"><%= ev.summary %></span>
+          </div>
+          <% } else { %>
+          <div class="event">
+            <span class="event-time"><% if (ev.allDay) { %>ganzt.<% } else { %><%= ev.start.toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'}) %><% } %></span>
+            <span class="event-title"><%= ev.summary %></span>
+          </div>
+          <% } %>
+        <% }); %>
+      </div>
+
+      <% if (calLayout.showDayAfter) { %>
+      <div class="day-section">
+        <span class="day-label">Übermorgen, <%= dayAfterStr %></span>
+        <% calLayout.dayAfter.forEach(function(ev) { %>
+          <% if (ev.type === 'task') { %>
+          <div class="task">
+            <span class="material-symbols-outlined task-icon"><%= ev.completed ? 'check_circle' : 'radio_button_unchecked' %></span>
+            <span class="task-title<%= ev.completed ? ' task-done' : '' %>"><%= ev.summary %></span>
+          </div>
+          <% } else { %>
+          <div class="event">
+            <span class="event-time"><% if (ev.allDay) { %>ganzt.<% } else { %><%= ev.start.toLocaleTimeString('de-DE', {hour:'2-digit', minute:'2-digit'}) %><% } %></span>
+            <span class="event-title"><%= ev.summary %></span>
+          </div>
+          <% } %>
+        <% }); %>
+      </div>
+      <% } %>
+
+    </section>
+  </div>
+</div>
+</body>
+</html>
