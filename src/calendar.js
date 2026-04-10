@@ -1,6 +1,7 @@
 'use strict';
 
 const { DAVClient } = require('tsdav');
+const ICAL = require('ical.js');
 
 /**
  * @typedef {Object} CalEvent
@@ -8,70 +9,85 @@ const { DAVClient } = require('tsdav');
  * @property {Date} start
  * @property {Date} end
  * @property {boolean} allDay
+ * @property {'event'|'task'} type
+ * @property {boolean} [completed]
  */
 
 /**
- * Parses a VEVENT block from raw iCal string.
+ * Parses iCal string and expands recurring VEVENTs within [rangeStart, rangeEnd).
  * @param {string} icalString
+ * @param {Date} rangeStart
+ * @param {Date} rangeEnd
  * @returns {CalEvent[]}
  */
-function parseEvents(icalString) {
+function parseVEvents(icalString, rangeStart, rangeEnd) {
   const events = [];
 
-  const get = (block, key) => {
-    const match = block.match(new RegExp(`${key}[^:]*:([^\r\n]+)`));
-    return match ? match[1].trim() : null;
-  };
-
-  // VEVENTs
-  const eventBlocks = icalString.match(/BEGIN:VEVENT[\s\S]*?END:VEVENT/g) || [];
-  for (const block of eventBlocks) {
-    const summary = get(block, 'SUMMARY') || '(kein Titel)';
-    const dtstart = get(block, 'DTSTART');
-    const dtend = get(block, 'DTEND');
-    if (!dtstart) continue;
-    const allDay = !dtstart.includes('T');
-    const start = parseICalDate(dtstart);
-    const end = dtend ? parseICalDate(dtend) : new Date(start.getTime() + 3600000);
-    if (start) events.push({ summary, start, end, allDay, type: 'event' });
+  let jcal;
+  try {
+    jcal = ICAL.parse(icalString);
+  } catch (e) {
+    return events;
   }
 
-  // VTODOs (Erinnerungen / Aufgaben)
-  const todoBlocks = icalString.match(/BEGIN:VTODO[\s\S]*?END:VTODO/g) || [];
-  for (const block of todoBlocks) {
-    const summary = get(block, 'SUMMARY') || '(kein Titel)';
-    const dtdue = get(block, 'DUE') || get(block, 'DTSTART');
-    if (!dtdue) continue;
-    const status = get(block, 'STATUS') || 'NEEDS-ACTION';
-    const allDay = !dtdue.includes('T');
-    const start = parseICalDate(dtdue);
-    if (!start) continue;
-    events.push({
-      summary,
-      start,
-      end: start,
-      allDay,
-      type: 'task',
-      completed: status === 'COMPLETED',
-    });
+  const comp = new ICAL.Component(jcal);
+  const vevents = comp.getAllSubcomponents('vevent');
+
+  for (const vevent of vevents) {
+    const event = new ICAL.Event(vevent);
+
+    if (event.isRecurring()) {
+      const iter = event.iterator();
+      let next;
+      // Iterate occurrences; stop once past rangeEnd
+      while ((next = iter.next())) {
+        const occStart = next.toJSDate();
+        if (occStart >= rangeEnd) break;
+        if (occStart < rangeStart) continue;
+
+        const duration = event.duration;
+        const occEnd = new Date(occStart.getTime() + duration.toSeconds() * 1000);
+        const allDay = next.isDate;
+
+        events.push({
+          summary: event.summary || '(kein Titel)',
+          start: occStart,
+          end: occEnd,
+          allDay,
+          type: 'event',
+        });
+      }
+    } else {
+      const dtstart = event.startDate;
+      if (!dtstart) continue;
+      const start = dtstart.toJSDate();
+      if (start >= rangeEnd || start < rangeStart) continue;
+
+      const dtend = event.endDate;
+      const end = dtend ? dtend.toJSDate() : new Date(start.getTime() + 3600000);
+      const allDay = dtstart.isDate;
+
+      events.push({
+        summary: event.summary || '(kein Titel)',
+        start,
+        end,
+        allDay,
+        type: 'event',
+      });
+    }
   }
 
   return events;
 }
 
 function parseICalDate(str) {
-  // Remove VALUE=DATE: or TZID=...: prefixes
   const clean = str.replace(/^[^:]+:/, '').trim();
-
   if (clean.length === 8) {
-    // All-day: YYYYMMDD
     const y = clean.slice(0, 4);
     const m = clean.slice(4, 6);
     const d = clean.slice(6, 8);
     return new Date(`${y}-${m}-${d}T00:00:00`);
   }
-
-  // With time: YYYYMMDDTHHMMSSZ or YYYYMMDDTHHMMSS
   const y = clean.slice(0, 4);
   const mo = clean.slice(4, 6);
   const d = clean.slice(6, 8);
@@ -84,6 +100,7 @@ function parseICalDate(str) {
 
 /**
  * Fetches calendar events for today and the next 2 days from Nextcloud CalDAV.
+ * Recurring events are expanded correctly.
  * @returns {Promise<CalEvent[]>}
  */
 async function fetchCalendarEvents() {
@@ -112,32 +129,33 @@ async function fetchCalendarEvents() {
     console.warn('[calendar] Kein passender Kalender gefunden, verwende alle.');
   }
 
-  const usedCalendars = targetCalendars.length > 0 ? targetCalendars : calendars;
+  const eventCalendars = targetCalendars.length > 0 ? targetCalendars : calendars;
+
 
   const now = new Date();
-  const start = new Date(now);
-  start.setHours(0, 0, 0, 0);
+  const rangeStart = new Date(now);
+  rangeStart.setHours(0, 0, 0, 0);
 
-  const end = new Date(start);
-  end.setDate(end.getDate() + 3);
+  const rangeEnd = new Date(rangeStart);
+  rangeEnd.setDate(rangeEnd.getDate() + 3);
 
   const allEvents = [];
 
-  for (const cal of usedCalendars) {
-    const objects = await client.fetchCalendarObjects({
+  // VEVENTs: only from the configured calendar (filtered by name)
+  for (const cal of eventCalendars) {
+    const eventObjects = await client.fetchCalendarObjects({
       calendar: cal,
-      timeRange: { start: start.toISOString(), end: end.toISOString() },
+      timeRange: { start: rangeStart.toISOString(), end: rangeEnd.toISOString() },
     });
 
-    for (const obj of objects) {
+    for (const obj of eventObjects) {
       if (obj.data) {
-        const events = parseEvents(obj.data);
+        const events = parseVEvents(obj.data, rangeStart, rangeEnd);
         allEvents.push(...events);
       }
     }
   }
 
-  // Sort by start time
   allEvents.sort((a, b) => a.start - b.start);
 
   return allEvents;

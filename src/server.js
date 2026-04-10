@@ -107,13 +107,13 @@ const { fontFaceCSS, headingFont } = buildFontConfig();
 // ─── i18n ─────────────────────────────────────────────────────────────────────
 
 const TRANSLATIONS = {
-  de: { today: 'Heute',     tomorrow: 'Morgen',   allDay: 'ganzt.',        weatherError: 'Wetter nicht verfügbar' },
-  en: { today: 'Today',     tomorrow: 'Tomorrow', allDay: 'all-day',       weatherError: 'Weather unavailable' },
-  fr: { today: "Auj.",      tomorrow: 'Demain',   allDay: 'journée',       weatherError: 'Météo indisponible' },
-  es: { today: 'Hoy',       tomorrow: 'Mañana',   allDay: 'todo el día',   weatherError: 'Clima no disponible' },
-  it: { today: 'Oggi',      tomorrow: 'Domani',   allDay: 'giornata',      weatherError: 'Meteo non disponibile' },
-  nl: { today: 'Vandaag',   tomorrow: 'Morgen',   allDay: 'hele dag',      weatherError: 'Weer niet beschikbaar' },
-  pt: { today: 'Hoje',      tomorrow: 'Amanhã',   allDay: 'dia inteiro',   weatherError: 'Tempo indisponível' },
+  de: { today: 'Heute',     tomorrow: 'Morgen',   weatherError: 'Wetter nicht verfügbar' },
+  en: { today: 'Today',     tomorrow: 'Tomorrow', weatherError: 'Weather unavailable' },
+  fr: { today: "Auj.",      tomorrow: 'Demain',   weatherError: 'Météo indisponible' },
+  es: { today: 'Hoy',       tomorrow: 'Mañana',   weatherError: 'Clima no disponible' },
+  it: { today: 'Oggi',      tomorrow: 'Domani',   weatherError: 'Meteo non disponibile' },
+  nl: { today: 'Vandaag',   tomorrow: 'Morgen',   weatherError: 'Weer niet beschikbaar' },
+  pt: { today: 'Hoje',      tomorrow: 'Amanhã',   weatherError: 'Tempo indisponível' },
 };
 
 // Mappt kurze Ländercodes (z.B. "DE") auf BCP-47-Locales (z.B. "de-DE")

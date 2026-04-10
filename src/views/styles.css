@@ -202,34 +202,15 @@ html, body {
   flex-shrink: 0;
 }
 
+.event-icon {
+  font-size: 26px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
 .event-title {
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-/* ─── Tasks / Reminders ──────────────────────────────────────── */
-
-.task {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 24px;
-  font-family: 'Lato', monospace;
-  white-space: nowrap;
-}
-
-.task-icon {
-  font-size: 28px;
-  flex-shrink: 0;
-}
-
-.task-title {
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.task-done {
-  text-decoration: line-through;
 }
 
 /* ─── Misc ───────────────────────────────────────────────────── */

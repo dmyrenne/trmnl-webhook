@@ -59,56 +59,41 @@
     <!-- Calendar Panel -->
     <section class="calendar">
 
-      <div class="day-section">
-        <span class="day-label"><%= t.today %></span>
-        <% calLayout.today.forEach(function(ev) { %>
-          <% if (ev.type === 'task') { %>
-          <div class="task">
-            <span class="material-symbols-outlined task-icon"><%= ev.completed ? 'check_circle' : 'radio_button_unchecked' %></span>
-            <span class="task-title<%= ev.completed ? ' task-done' : '' %>"><%= ev.summary %></span>
+      <%
+        const birthdayRe = /geburtstag|birthday|bday|anniversaire|verjaardag|cumpleaños|compleanno|fødselsdag|födelsedag|urodziny/i;
+        function renderEvent(ev) {
+          const isBirthday = birthdayRe.test(ev.summary);
+          if (isBirthday) { %>
+          <div class="event birthday">
+            <span class="material-symbols-outlined event-icon">cake</span>
+            <span class="event-title"><%= ev.summary %></span>
+          </div>
+          <% } else if (ev.allDay) { %>
+          <div class="event">
+            <span class="event-title"><%= ev.summary %></span>
           </div>
           <% } else { %>
           <div class="event">
-            <span class="event-time"><% if (ev.allDay) { %><%= t.allDay %><% } else { %><%= ev.start.toLocaleTimeString(locale, timeOpts) %><% } %></span>
+            <span class="event-time"><%= ev.start.toLocaleTimeString(locale, timeOpts) %></span>
             <span class="event-title"><%= ev.summary %></span>
           </div>
           <% } %>
-        <% }); %>
+        <% } %>
+
+      <div class="day-section">
+        <span class="day-label"><%= t.today %></span>
+        <% calLayout.today.forEach(renderEvent); %>
       </div>
 
       <div class="day-section">
         <span class="day-label"><%= t.tomorrow %>, <%= tomorrowStr %></span>
-        <% calLayout.tomorrow.forEach(function(ev) { %>
-          <% if (ev.type === 'task') { %>
-          <div class="task">
-            <span class="material-symbols-outlined task-icon"><%= ev.completed ? 'check_circle' : 'radio_button_unchecked' %></span>
-            <span class="task-title<%= ev.completed ? ' task-done' : '' %>"><%= ev.summary %></span>
-          </div>
-          <% } else { %>
-          <div class="event">
-            <span class="event-time"><% if (ev.allDay) { %><%= t.allDay %><% } else { %><%= ev.start.toLocaleTimeString(locale, timeOpts) %><% } %></span>
-            <span class="event-title"><%= ev.summary %></span>
-          </div>
-          <% } %>
-        <% }); %>
+        <% calLayout.tomorrow.forEach(renderEvent); %>
       </div>
 
       <% if (calLayout.showDayAfter) { %>
       <div class="day-section">
         <span class="day-label"><%= dayAfterLabel %>, <%= dayAfterStr %></span>
-        <% calLayout.dayAfter.forEach(function(ev) { %>
-          <% if (ev.type === 'task') { %>
-          <div class="task">
-            <span class="material-symbols-outlined task-icon"><%= ev.completed ? 'check_circle' : 'radio_button_unchecked' %></span>
-            <span class="task-title<%= ev.completed ? ' task-done' : '' %>"><%= ev.summary %></span>
-          </div>
-          <% } else { %>
-          <div class="event">
-            <span class="event-time"><% if (ev.allDay) { %><%= t.allDay %><% } else { %><%= ev.start.toLocaleTimeString(locale, timeOpts) %><% } %></span>
-            <span class="event-title"><%= ev.summary %></span>
-          </div>
-          <% } %>
-        <% }); %>
+        <% calLayout.dayAfter.forEach(renderEvent); %>
       </div>
       <% } %>
 
