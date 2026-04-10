@@ -1,10 +1,10 @@
 # TRMNL Dashboard
 
-A self-hosted Node.js dashboard for **TRMNL E-Ink displays (800×480px)** via the [LaraPaper](https://github.com/usetrmnl/byos_larapaper) Image Webhook.
+A self-hosted Node.js dashboard for **TRMNL E-Ink displays (800×480px)** via the [LaraPaper](https://github.com/usetrmnl/larapaper) Image Webhook.
 
 Every 15 minutes (configurable), Puppeteer takes a screenshot of the dashboard and pushes it to your LaraPaper instance.
 
-![Dashboard Preview](https://raw.githubusercontent.com/dmyrenne/trmnl-webhook/pics/preview.png)
+![Dashboard Preview](./pics/preview.png)
 
 ## Features
 
